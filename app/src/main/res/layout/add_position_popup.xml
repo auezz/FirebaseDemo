@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:elevation="2dp"
+    android:background="@android:drawable/dialog_holo_light_frame"
+    android:radius="5dp">
+
+    <LinearLayout
+        android:id="@+id/titlePopup"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="24dp"
+        android:layout_marginRight="24dp"
+        android:layout_marginTop="24dp">
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Add Position"
+            android:textColor="#000000"
+            android:textSize="20dp"
+
+            />
+
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/PositionLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/titlePopup"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="20dp">
+
+        <TextView
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:orientation="horizontal"
+            android:text="Position :"
+            android:textColor="#1e1e1e"
+            android:textSize="13dp" />
+
+        <EditText
+            android:id="@+id/PostionName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="textPersonName"
+            android:textSize="14dp" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/SSIDLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/PositionLayout"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="15dp">
+
+        <TextView
+
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:orientation="horizontal"
+            android:text="SSID :"
+            android:textColor="#1e1e1e"
+            android:textSize="13dp" />
+
+        <TextView
+            android:id="@+id/SsidTag"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="textPersonName" />
+
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:id="@+id/RssiLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/SSIDLayout"
+        android:layout_marginLeft="24dp"
+        android:layout_marginTop="30dp">
+
+
+        <TextView
+            android:id="@+id/txtP"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:orientation="horizontal"
+            android:text="RSSI :"
+            android:textColor="#1e1e1e"
+            android:textSize="13dp" />
+
+        <TextView
+            android:id="@+id/Rssi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="textPersonName" />
+
+    </LinearLayout>
+
+
+
+    <!--Button    -->
+    <LinearLayout
+        android:id="@+id/ButtonLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/RssiLayout"
+        android:layout_marginTop="104dp">
+
+        <Button
+            android:id="@+id/CancelButt"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:text="Cancel"
+            android:textColor="#059689"
+            android:textSize="16dp"
+            android:layout_marginLeft="48dp"/>
+
+        <Button
+            android:id="@+id/ConfirmButt"
+            style="@style/Widget.AppCompat.Button.Borderless.Colored"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:layout_marginRight="8dp"
+            android:text="Confirm"
+            android:textColor="#059689"
+            android:textSize="16dp"  />
+
+    </LinearLayout>
+
+</RelativeLayout>
