@@ -113,9 +113,8 @@ public class RetrieveActivity extends AppCompatActivity {
                         my_num.add(ii);
 
                     }
-
+                    //Log.e(null,null);
                     Log.e("my num: "+count2+"  Size: "+ my_num.size(), my_num + "");
-                    //Cal(my_num);
                     Calculator(my_num);
                     count2++;
                 }
@@ -140,13 +139,13 @@ public class RetrieveActivity extends AppCompatActivity {
                                 getRssi.add((long) wifiScanList.get(i).level);
                             }
 
-                Log.e("get Rssi  ",getRssi+"");
+                Log.e("get Rssi  "+getRssi.size() ,"  "+getRssi);
 
-
-
-               // for (int i=0;i<sss.size()-1;i++){
-                    for (int j=1;j<getRssi.size();j++){
-                        //Log.e("get RSSI  "+j+"  ", getRssi+"");
+                    final int empty_data = -100;
+                    for (int j=0;j<getRssi.size();j++){
+                        if (getRssi.size() > getData.size()){
+                            getData.add(empty_data);
+                        }
                         upperSum = Math.pow((getRssi.get(j)-getData.get(j)),2);
                         Rest += upperSum;
 
@@ -159,13 +158,13 @@ public class RetrieveActivity extends AppCompatActivity {
 
 
 
-                    Log.e("get data offline", getData + "");
+                    Log.e("get data offline  "+getData.size(), getData + "");
 
                     Log.e("Rest  "+PositionList.get(c),"  "+Rest);
 
                     Log.e("sqrt   "+PositionList.get(c),"  "+sqrt);
 
-                   AllResultSqrt.add(PositionList.get(c)+"/"+String.format("%.2f",sqrt));
+                   AllResultSqrt.add(PositionList.get(c)+" / "+String.format("%.2f",sqrt));
                     //AllResultSqrt.add(sqrt);
 
 //                    String tmp[] = AllResultSqrt.spliterator("/");
@@ -181,7 +180,7 @@ public class RetrieveActivity extends AppCompatActivity {
                     c++;
 
 
-               // }
+
                 chk = (Button) findViewById(R.id.chkButt);
                 chk.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -200,86 +199,6 @@ public class RetrieveActivity extends AppCompatActivity {
                 });
 
             }
-
-
-
-
-
-//            public void get(List<Integer> getOffline){
-//
-//                double upperSum;
-//                double Rest =0;
-//                double sqrt;
-//
-//                List<ScanResult> wifiScanList = wifi.getScanResults();
-//                            //getData = new int[wifiScanList.size()];
-//                            getRssi.clear();
-//                            for (int i=0;i<wifiScanList.size();i++){
-//                                getRssi.add((long) wifiScanList.get(i).level);
-//                            }
-//
-////                Log.e("get Rssi  ",getRssi+"");
-//
-//
-//
-//                for (int i=0;i<sss.size()-1;i++){
-//                    for (int j=0;j<getRssi.size()-1;j++){
-//                        //Log.e("get RSSI  "+j+"  ", getRssi+"");
-//                        upperSum = Math.pow((getRssi.get(j)-getOffline.get(j)),2);
-//                        Rest += upperSum;
-//
-//                    }
-//
-//
-//
-//                    sqrt = Math.sqrt(Rest);
-////                    sortPosition.add(sqrt);
-//
-//
-//
-//                    Log.e("get data offline", getOffline + "");
-//
-//                    Log.e("Rest  "+PositionList.get(c),"  "+Rest);
-//
-//                    Log.e("sqrt   "+PositionList.get(c),"  "+sqrt);
-//
-//                   AllResultSqrt.add(PositionList.get(c)+"/"+String.format("%.2f",sqrt));
-//                    //AllResultSqrt.add(sqrt);
-//
-//                    String tmp[] = AllResultSqrt.spliterator("/");
-//
-//                    Log.e("All result  ",AllResultSqrt+"");
-//
-//
-////                    Collections.sort(AllResultSqrt);
-////                    Log.e("sort",AllResultSqrt+"");
-//
-////                    myPosition.add(PositionList.get(c));
-////                    Log.e("myPosition", myPosition+"");
-//                    c++;
-//
-//
-//                }
-//                chk = (Button) findViewById(R.id.chkButt);
-//                chk.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        AlertDialog.Builder mBuilder = new AlertDialog.Builder(RetrieveActivity.this);
-//                        View mView = getLayoutInflater().inflate(R.layout.dialog, null);
-//                        TextView output_Position = (TextView) mView.findViewById(R.id.Output_PositionTextView);
-//                        output_Position.setText(AllResultSqrt.toString());
-////                        output_Position.setText("Hello");
-//                        Log.e("All Result click", AllResultSqrt.get(0)+"");
-//
-//                        mBuilder.setView(mView);
-//                        AlertDialog dialog = mBuilder.create();
-//                        dialog.show();
-//                    }
-//                });
-//            }
-
-
-
 
 
 //            public void Cal(final List<Integer> getOffline){
@@ -364,8 +283,9 @@ public class RetrieveActivity extends AppCompatActivity {
         Clr.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                dref.removeValue();
                 list.clear();
+                dref.removeValue();
+
             }
         });
 
