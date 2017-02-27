@@ -37,11 +37,13 @@ public class ProfileActivity extends AppCompatActivity {
     WifiManager wifi;
     WifiInfo wifiInfo;
     int SendRssi[];
+    int AllSumRssi[];
+    double avgRssi[];
     String SendSsid[];
+    String macAddress[];
     ListView lv;
     String wifis[];
     EditText input;
-    int count =0;
 
 
     private DatabaseReference mFirebaseDatabaseReference;
@@ -72,8 +74,6 @@ public class ProfileActivity extends AppCompatActivity {
         //AddListView
        // lv = (ListView)findViewById(R.id.dataList);
         wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        wifiInfo = wifi.getConnectionInfo();
-        final String macAddress = wifiInfo.getMacAddress();
         wifi.startScan();
 
         //add position butt
@@ -90,22 +90,40 @@ public class ProfileActivity extends AppCompatActivity {
                     wifis = new String[wifiScanList.size()];
                     SendSsid = new String[wifiScanList.size()];
                     SendRssi = new int[wifiScanList.size()];
+                    avgRssi = new double[wifiScanList.size()];
+                    AllSumRssi = new int[wifiScanList.size()];
+                    //wifiInfo = wifi.getConnectionInfo();
+                    macAddress = new String[wifiScanList.size()];
+                    //final String macAddress = wifiInfo.getMacAddress();
+
+                    for (int k=0;k<wifiScanList.size();k++){
+                    for (int j=0;j<wifiScanList.size();j++){
+                        SendRssi[j] = (wifiScanList.get(j)).level;
+                        AllSumRssi[j] += SendRssi[j];
+                       // Log.e("All sum", AllSumRssi[j]+"");
+                    }
+                    }
+
 
                     for (int i=0;i<wifiScanList.size();i++){
                         SendSsid[i] = (wifiScanList.get(i)).SSID.toString();
-                        SendRssi[i] = (wifiScanList.get(i)).level;
+                        avgRssi[i] = AllSumRssi[i]/wifiScanList.size();
+                        macAddress[i] = (wifiScanList.get(i).BSSID);
+
+                        Log.e("AllSumRssi:  ", AllSumRssi[i]+"");
+                        Log.e("avgRssi:  ", avgRssi[i]+"");
+
                         wifis[i] = ("Position: "+input.getText().toString()+" SSID: "+(wifiScanList.get(i)).SSID.toString()+ "Force of Signal: "+(wifiScanList.get(i).level)+" dB.");
 
 
 
                             SendInformation sendInformation = new SendInformation(
                                     input.getText().toString(),
-                                    macAddress,
+                                    macAddress[i],
                                     SendSsid[i],
-                                    SendRssi[i],
-                                    count);
+                                    avgRssi[i]);
                             mFirebaseDatabaseReference.child(MESSAGES_CHILD)
-                                    .child(input.getText().toString()).child("macAddress: "+macAddress).push().setValue(sendInformation);
+                                    .child(input.getText().toString()).push().setValue(sendInformation);
 
 
 
@@ -114,14 +132,16 @@ public class ProfileActivity extends AppCompatActivity {
                     }
 
 
-                   // lv.setAdapter(new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, wifis));
+//                    lv.setAdapter(new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_list_item_1, wifis));
 
+                    Toast.makeText(getApplicationContext(), "Position: "+input.getText().toString()+" added. ", Toast.LENGTH_LONG).show();
 
 
 
 
 
                 }
+                input.setText(null);
 
                 //intent.putExtra("SSID", SendSsid).toString();
                 //intent.putExtra("RSSI", SendRssi + " dB");
