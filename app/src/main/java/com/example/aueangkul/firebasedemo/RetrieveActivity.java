@@ -7,6 +7,8 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -21,17 +23,22 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 public class RetrieveActivity extends AppCompatActivity {
     List<Test> test;
+    List<Test2> test2;
     List<String> sss = new ArrayList<String>();
     DatabaseReference dref;
+    DatabaseReference getSubKey;
     ListView rtList;
     ArrayList<String> list = new ArrayList<>();
     ArrayAdapter<String> adapter;
 
     Button chk;
+    Button NearPoint;
     WifiManager wifi;
     List<Long> getRssi = new ArrayList<>();
 
@@ -39,20 +46,29 @@ public class RetrieveActivity extends AppCompatActivity {
     double result2 = 0;
     double resultSqrt;
 
-    Long rssi;
+    String rssi;
     String ssid;
     String position;
     String macAddress;
-    List<Long> arr;
-    List<Integer> my_num = new ArrayList<>();
+    String DateTime;
+    List<String> TimeList = new ArrayList<>();
+    List<String> arr;
+    List<Double> my_num = new ArrayList<>();
     List<String> AllResultSqrt = new ArrayList<>();
     List<String> PositionList = new ArrayList<>();
+    List<Integer> sum_count = new ArrayList<>();
     String KPosition;
-    List<String> myPosition = new ArrayList<>();
+    List<Double> convertArr = new ArrayList<>();
     int c=0;
 
     Button Clr;
 
+    //BayesRule
+    List<String> SortData = new ArrayList<>();
+    DatabaseReference BayesList;
+    String BayesPosition;
+    String BayesSSID;
+    int RSSIValues;
 
 
     @Override
@@ -60,7 +76,10 @@ public class RetrieveActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_retrieve);
 
+        getSupportActionBar().setTitle("การหาตำแหน่ง");
+
         test = new ArrayList<>();
+        test2 = new ArrayList<>();
 
         rtList = (ListView) findViewById(R.id.RtListView);
         adapter = new ArrayAdapter<String>(this,android.R.layout.simple_dropdown_item_1line,list);
@@ -70,8 +89,10 @@ public class RetrieveActivity extends AppCompatActivity {
         wifi = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         wifi.startScan();
 
+
+
         dref = FirebaseDatabase.getInstance().getReference();
-        dref.child("messages").addValueEventListener(new ValueEventListener() {
+        dref.child("PositionInfo").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 int count = 0;
@@ -80,13 +101,18 @@ public class RetrieveActivity extends AppCompatActivity {
                     //Getting Data from Datasnapshot
 
                     arr.clear();
+                    convertArr.clear();
+                    TimeList.clear();
                     for (DataSnapshot postSnapshots : postSnapshot.getChildren()){
                         position  = (String) postSnapshots.child("position").getValue();
                         ssid = (String) postSnapshots.child("ssid").getValue();
-                        rssi = (Long) postSnapshots.child("rssi").getValue();
+                        rssi = (String) postSnapshots.child("avgRssi").getValue();
                         macAddress = (String) postSnapshots.child("macAddress").getValue();
+                        DateTime = (String) postSnapshots.child("time").getValue();
                         list.add(position+"  "+ssid+"  "+rssi);
                         arr.add(rssi);
+                        convertArr.add(Double.parseDouble(rssi));
+                        TimeList.add(DateTime);
                         adapter.notifyDataSetChanged();
                     }
 
@@ -94,7 +120,12 @@ public class RetrieveActivity extends AppCompatActivity {
                     String str = test.get(count++).longList.toString();
                     Log.e("Position: "+position, ""+str+" count="+count);
                     sss.add(str);
+                   // Log.e("sss  "+sss.size()+" ",TimeList+"");
                     PositionList.add(position);
+                    Bayes(TimeList,convertArr);
+
+                    //AcValues acValues = new AcValues(Double.parseDouble(rssi),macAddress,position,ssid,DateTime);
+
 
 
                 }
@@ -103,30 +134,48 @@ public class RetrieveActivity extends AppCompatActivity {
                 for(String strs:sss) {
                     String tmp3 = strs.substring(1, strs.length() - 1);
                     String[] arr2 = tmp3.split(",");
-                    int[] list_int = new int[arr2.length];
+                    double[] list_double = new double[arr2.length];
                     int i = 0;
                     for (String x : arr2) {
-                        list_int[i++] = Integer.parseInt(x.trim());
+                        list_double[i++] = Double.parseDouble(x.trim());
                     }
                     my_num.clear();
-                    for (int ii : list_int) {
+                    for (double ii : list_double) {
                         my_num.add(ii);
 
                     }
                     //Log.e(null,null);
                     Log.e("my num: "+count2+"  Size: "+ my_num.size(), my_num + "");
+                    //AllListData.add(my_num);
                     Calculator(my_num);
+                    //RssiData(my_num);
                     count2++;
+
+
+
                 }
+
+//                for (String t:TimeList){
+//                    String tmp = t.substring(1,t.length()-1);
+//                    String[] arrT = tmp.split(",");
+//                    String[] list_time = new String[arrT.length];
+//                    int i=0;
+//                    for (String x: arrT){
+//                        list_time[i++] = x.trim();
+//                    }
+//                    my_time.clear();
+//                    for (String ii: list_time){
+//                        my_time.add(ii);
+//                    }
+//                    Bayes(my_time);
+//
+//                }
+
 
 
             }
 
-
-
-
-
-            public void Calculator(List<Integer> getData){
+            public void Calculator(List<Double> getData){
 
                 double upperSum;
                 double Rest =0;
@@ -139,9 +188,10 @@ public class RetrieveActivity extends AppCompatActivity {
                                 getRssi.add((long) wifiScanList.get(i).level);
                             }
 
-                Log.e("get Rssi  "+getRssi.size() ,"  "+getRssi);
+            //    Log.e("get Rssi  "+getRssi.size() ,"  "+getRssi);
+                Log.e("Get DATA", getData.size()+" "+getData);
 
-                    final int empty_data = -100;
+                    final double empty_data = -100;
                     for (int j=0;j<getRssi.size();j++){
                         if (getRssi.size() > getData.size()){
                             getData.add(empty_data);
@@ -152,32 +202,23 @@ public class RetrieveActivity extends AppCompatActivity {
                     }
 
 
-
                     sqrt = Math.sqrt(Rest);
-//                    sortPosition.add(sqrt);
 
 
 
-                    Log.e("get data offline  "+getData.size(), getData + "");
 
-                    Log.e("Rest  "+PositionList.get(c),"  "+Rest);
+//                    Log.e("get data offline  "+getData.size(), getData + "");
+//
+//                    Log.e("Rest  "+PositionList.get(c),"  "+Rest);
+//
+//                    Log.e("sqrt   "+PositionList.get(c),"  "+sqrt);
 
-                    Log.e("sqrt   "+PositionList.get(c),"  "+sqrt);
-
-                   AllResultSqrt.add(PositionList.get(c)+" / "+String.format("%.2f",sqrt));
-                    //AllResultSqrt.add(sqrt);
-
-//                    String tmp[] = AllResultSqrt.spliterator("/");
-
-                    Log.e("All result  ",AllResultSqrt+"");
-
-
-//                    Collections.sort(AllResultSqrt);
-//                    Log.e("sort",AllResultSqrt+"");
-
-//                    myPosition.add(PositionList.get(c));
-//                    Log.e("myPosition", myPosition+"");
-                    c++;
+                   AllResultSqrt.add(PositionList.get(c)+" "+String.format("%.2f",sqrt));
+                   Log.e("All result  ",AllResultSqrt+"");
+                   nearby(AllResultSqrt);
+                   //Bayes(AllResultSqrt);
+                  // Bayes2(AllResultSqrt);
+                   c++;
 
 
 
@@ -186,13 +227,16 @@ public class RetrieveActivity extends AppCompatActivity {
                     @Override
                     public void onClick(View view) {
                         AlertDialog.Builder mBuilder = new AlertDialog.Builder(RetrieveActivity.this);
+                        mBuilder.setTitle("Euclidean Values");
                         View mView = getLayoutInflater().inflate(R.layout.dialog, null);
                         TextView output_Position = (TextView) mView.findViewById(R.id.Output_PositionTextView);
                         output_Position.setText(AllResultSqrt.toString());
 //                        output_Position.setText("Hello");
                         Log.e("All Result click", AllResultSqrt.get(0)+"");
 
+
                         mBuilder.setView(mView);
+                        mBuilder.setNegativeButton("OKAY",null);
                         AlertDialog dialog = mBuilder.create();
                         dialog.show();
                     }
@@ -201,75 +245,82 @@ public class RetrieveActivity extends AppCompatActivity {
             }
 
 
-//            public void Cal(final List<Integer> getOffline){
-//
-//
-//                chk = (Button) findViewById(R.id.chkButt);
-//                chk.setOnClickListener(new View.OnClickListener() {
-//                    @Override
-//                    public void onClick(View view) {
-//                        getRssi.clear();
-//                        //Log.e("offline", getOffline+"");
-//                        if (view.getId() == R.id.chkButt){
-//                            List<ScanResult> wifiScanList = wifi.getScanResults();
-//                            //getData = new int[wifiScanList.size()];
-//                            for (int i=0;i<wifiScanList.size();i++){
-//                                getRssi.add((long) wifiScanList.get(i).level);
-//                            }
-//                            Log.e("RssiP :",getRssi+"");
-//
-//                        }
-//
-//
-//                        Log.e("get offline jhhgfgy.", getOffline+"");
-//
-//
-//                        for (int i=0;i<sss.size();i++){
-//                            for (int j=0;j<getRssi.size();j++) {
-//                                result = Math.pow((getRssi.get(j) - getOffline.get(j)), 2);
-//                                result2 += result;
-//                            }
-//
-//                            Log.e("tmp cal", getOffline+ "");
-//
-//                            resultSqrt = Math.sqrt(result2);
-//                            AllResultSqrt.add(resultSqrt);
-//                            Log.e("RssiP Size :"+getRssi.size(),getRssi+"");
-//
-//
-//                            //Log.e("tmp"+tmp.size(),tmp+"");
-//                            Log.e("result 2  "+i,result2+"");
-//
-//                            Log.e("Result SQRT  "+i,resultSqrt+"");
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//
-//                        }
-//                        Collections.sort(AllResultSqrt);
-//
-//                        for (double counter: AllResultSqrt){
-//
-//                            Log.e("All result SQRT",counter+"");
-//                        }
-//
-//
-//
-//
-//
-//
-//                    }
-//                });
-//
-//
-//
-//            }
+
+
+
+            public void nearby(final List<String> EuclideanValue){
+                //sorting Euclidean Values
+                Collections.sort(EuclideanValue, new Comparator<String>() {
+                    @Override
+                    public int compare(String o1, String o2) {
+                        return extractInt(o1) - extractInt(o2);
+                    }
+
+                    int extractInt(String s){
+                        String num = s.replaceAll("\\D", "");
+                        //return 0 0 if no digits found
+                        return num.isEmpty() ? 0 : Integer.parseInt(num);
+
+                    }
+
+
+                });
+
+
+                NearPoint = (Button) findViewById(R.id.nearButt);
+                NearPoint.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        AlertDialog.Builder mBuilder = new AlertDialog.Builder(RetrieveActivity.this);
+                        mBuilder.setTitle("Nearby Place");
+                        View mView = getLayoutInflater().inflate(R.layout.dialog,null);
+                        TextView output_Position = (TextView) mView.findViewById(R.id.Output_PositionTextView);
+                        output_Position.setText(EuclideanValue.get(0).toString());
+
+
+                        mBuilder.setView(mView);
+                        mBuilder.setNegativeButton("OKAY",null);
+                        AlertDialog dialog = mBuilder.create();
+                        dialog.show();
+
+                    }
+                });
+
+               // Bayes(EuclideanValue);
+                SortData = EuclideanValue;
+             }
+
+            public void Bayes(List<String> Time,List<Double> rssi){
+
+
+                double max_val = -9999999 ;
+                String time_pointer ="" ;
+                int tmp=0;
+                for (int i=0;i<rssi.size();i++){
+                    if (rssi.get(i) > max_val){
+                        //max_val = rssi.get(i);
+                        time_pointer = Time.get(i);
+                    }
+                }
+               // Log.e("TestPppp  ",time_pointer +"");
+                for (int i=0;i<rssi.size();i++){
+                    Log.e("TestP  ",Time.get(i) +"|||"+time_pointer);
+                    if (time_pointer.equals(Time.get(i))){
+                        tmp++;
+                    }
+                }
+
+                Log.e("TestP  ",tmp +"TUP");
+
+
+
+
+
+            }
+
+
+
+
 
 
             @Override
@@ -278,6 +329,29 @@ public class RetrieveActivity extends AppCompatActivity {
 
             }
         });
+
+//
+//        BayesList = FirebaseDatabase.getInstance().getReference();
+//        BayesList.child("BayesRule").addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(DataSnapshot dataSnapshot) {
+//                for (DataSnapshot postSnapshot : dataSnapshot.getChildren()){
+//                    for (DataSnapshot postSnapshots : postSnapshot.getChildren()){
+//                        BayesPosition = (String) postSnapshots.child("")
+//
+//                    }
+//
+//
+//                }
+//            }
+//
+//            @Override
+//            public void onCancelled(DatabaseError databaseError) {
+//
+//            }
+//        });
+
+
 
         Clr = (Button) findViewById(R.id.clr_Butt);
         Clr.setOnClickListener(new View.OnClickListener() {
@@ -291,14 +365,60 @@ public class RetrieveActivity extends AppCompatActivity {
 
 
 
-
     }
 
-//    public void Cal(List<Long> tmp, List<Long> getRssi){
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.menu,menu);
+        return true;
+    }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+        String P;
+        List<String> Plist = new ArrayList<>();
+        int id = item.getItemId();
+        if (id == R.id.action_delete) {
+
+            P = String.valueOf(dref.child("PositionInfo").child("position"));
+
+//            dref.child("messages").addValueEventListener(new ValueEventListener() {
+//                @Override
+//                public void onDataChange(DataSnapshot dataSnapshot) {
+//                    for (DataSnapshot postSnapshot : dataSnapshot.getChildren()){
+//                        for (DataSnapshot postSnapshots : postSnapshot.getChildren()) {
+//                        P = (String) postSnapshots.child("position").getValue();
+//
+//                        }
 //
 //
-//        return ;
-//    }
+//                    }
+//                }
+//
+//                @Override
+//                public void onCancelled(DatabaseError databaseError) {
+//
+//                }
+//            });
+
+            AlertDialog.Builder mBuilder = new AlertDialog.Builder(RetrieveActivity.this);
+            mBuilder.setTitle("Delete Position");
+            View mView = getLayoutInflater().inflate(R.layout.dialog,null);
+            TextView output_Position = (TextView) mView.findViewById(R.id.Output_PositionTextView);
+            output_Position.setText(P);
+
+
+
+            mBuilder.setView(mView);
+            mBuilder.setNegativeButton("Delete",null);
+            AlertDialog dialog = mBuilder.create();
+            dialog.show();
+
+
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 
 
 
